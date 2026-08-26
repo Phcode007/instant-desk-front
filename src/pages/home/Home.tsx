@@ -1,4 +1,4 @@
-import { ArrowRight, Headset, ShieldCheck, Zap, Users } from '@phosphor-icons/react';
+import { ArrowRight, Headphones, ShieldCheck, Lightning, Users } from '@phosphor-icons/react';
 
 function Home() {
   return (
@@ -8,7 +8,7 @@ function Home() {
       <div className="bg-slate-800 text-white py-20 px-4">
         <div className="container mx-auto text-center">
           <div className="flex justify-center mb-6">
-            <Headset size={64} weight="bold" className="text-blue-400" />
+            <Headphones size={64} weight="bold" className="text-blue-400" />
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-4">
             Instant Desk
@@ -34,7 +34,7 @@ function Home() {
           {/* Feature 1 */}
           <div className="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow">
             <div className="flex justify-center mb-4">
-              <Zap size={40} weight="bold" className="text-yellow-500" />
+              <Lightning size={40} weight="bold" className="text-yellow-500" />
             </div>
             <h3 className="text-xl font-bold text-slate-800 mb-2">Rápido</h3>
             <p className="text-slate-600">
