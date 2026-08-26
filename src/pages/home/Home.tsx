@@ -1,89 +1,88 @@
+import { ArrowRight, Headset, ShieldCheck, Zap, Users } from '@phosphor-icons/react';
 
 function Home() {
   return (
-    <>
-      {/* Header / Navbar */}
-      <div className="bg-slate-800 text-white p-4 shadow-md">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Instant Desk</h1>
-          <span className="text-sm text-slate-300">Sistema de Help Desk</span>
+    <div className="min-h-screen bg-slate-100">
+      
+      {/* HERO SECTION */}
+      <div className="bg-slate-800 text-white py-20 px-4">
+        <div className="container mx-auto text-center">
+          <div className="flex justify-center mb-6">
+            <Headset size={64} weight="bold" className="text-blue-400" />
+          </div>
+          <h1 className="text-4xl md:text-6xl font-bold mb-4">
+            Instant Desk
+          </h1>
+          <p className="text-xl md:text-2xl text-slate-300 mb-8 max-w-2xl mx-auto">
+            O sistema de Help Desk que conecta sua equipe e resolve problemas em tempo recorde.
+          </p>
+          <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-lg text-lg transition-colors flex items-center gap-2 mx-auto">
+            Acessar o Sistema
+            <ArrowRight size={24} weight="bold" />
+          </button>
         </div>
       </div>
 
-      {/* Conteúdo principal */}
-      <div className="max-w-6xl mx-auto p-6">
+      {/* FEATURES SECTION */}
+      <div className="container mx-auto px-4 py-16">
+        <h2 className="text-3xl font-bold text-center text-slate-800 mb-12">
+          Por que usar o Instant Desk?
+        </h2>
         
-        {/* Boas-vindas */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-slate-800">Bem-vindo ao Dashboard</h2>
-          <p className="text-slate-600 mt-1">Acompanhe seus tickets de suporte em um só lugar.</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          {/* Feature 1 */}
+          <div className="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow">
+            <div className="flex justify-center mb-4">
+              <Zap size={40} weight="bold" className="text-yellow-500" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 mb-2">Rápido</h3>
+            <p className="text-slate-600">
+              Abra e acompanhe tickets em segundos. Notificações em tempo real para sua equipe.
+            </p>
+          </div>
+
+          {/* Feature 2 */}
+          <div className="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow">
+            <div className="flex justify-center mb-4">
+              <ShieldCheck size={40} weight="bold" className="text-green-500" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 mb-2">Seguro</h3>
+            <p className="text-slate-600">
+              Isolamento completo de dados por empresa. Autenticação JWT e controle de acesso.
+            </p>
+          </div>
+
+          {/* Feature 3 */}
+          <div className="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow">
+            <div className="flex justify-center mb-4">
+              <Users size={40} weight="bold" className="text-blue-500" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 mb-2">Colaborativo</h3>
+            <p className="text-slate-600">
+              Comunicação por chat em cada ticket. Anexos, comentários e histórico completo.
+            </p>
+          </div>
+
         </div>
-
-        {/* Cards de resumo (equivalente aos cards de postagem do Blog Pessoal) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white p-4 rounded-lg shadow border-l-4 border-red-500">
-            <h3 className="text-lg font-bold text-slate-700">Abertos</h3>
-            <p className="text-3xl font-bold text-red-500 mt-2">12</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow border-l-4 border-yellow-500">
-            <h3 className="text-lg font-bold text-slate-700">Em Atendimento</h3>
-            <p className="text-3xl font-bold text-yellow-500 mt-2">5</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
-            <h3 className="text-lg font-bold text-slate-700">Resolvidos</h3>
-            <p className="text-3xl font-bold text-green-500 mt-2">28</p>
-          </div>
-        </div>
-
-        {/* Lista de tickets fictícia (equivalente às postagens do Blog) */}
-        <h3 className="text-lg font-bold text-slate-800 mb-4">Últimos Tickets</h3>
-        
-        <div className="space-y-4">
-          {/* Ticket 1 */}
-          <div className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start">
-              <div>
-                <h4 className="font-bold text-slate-800">Erro ao acessar o sistema de vendas</h4>
-                <p className="text-slate-600 mt-1 text-sm">Não consigo fazer login no módulo de vendas desde ontem...</p>
-              </div>
-              <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded">ABERTO</span>
-            </div>
-            <div className="mt-3 text-xs text-slate-400">
-              Aberto por: Carlos Silva | Categoria: Sistemas | 25/08/2026
-            </div>
-          </div>
-
-          {/* Ticket 2 */}
-          <div className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start">
-              <div>
-                <h4 className="font-bold text-slate-800">Solicitação de novo mouse</h4>
-                <p className="text-slate-600 mt-1 text-sm">O mouse atual parou de funcionar, preciso de um substituto urgente.</p>
-              </div>
-              <span className="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-1 rounded">EM ANDAMENTO</span>
-            </div>
-            <div className="mt-3 text-xs text-slate-400">
-              Aberto por: Ana Paula | Categoria: Hardware | 24/08/2026
-            </div>
-          </div>
-
-          {/* Ticket 3 */}
-          <div className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start">
-              <div>
-                <h4 className="font-bold text-slate-800">Dúvida sobre férias coletivas</h4>
-                <p className="text-slate-600 mt-1 text-sm">Gostaria de saber como funciona o agendamento neste ano.</p>
-              </div>
-              <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded">RESOLVIDO</span>
-            </div>
-            <div className="mt-3 text-xs text-slate-400">
-              Aberto por: João Mendes | Categoria: RH | 20/08/2026
-            </div>
-          </div>
-        </div>
-
       </div>
-    </>
+
+      {/* CTA SECTION */}
+      <div className="bg-white py-16 px-4">
+        <div className="container mx-auto text-center">
+          <h2 className="text-3xl font-bold text-slate-800 mb-4">
+            Pronto para organizar seu suporte?
+          </h2>
+          <p className="text-slate-600 mb-8 max-w-xl mx-auto">
+            Junte-se às empresas que já utilizam o Instant Desk para gerenciar chamados de forma eficiente.
+          </p>
+          <button className="bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-8 rounded-lg text-lg transition-colors">
+            Começar Agora
+          </button>
+        </div>
+      </div>
+
+    </div>
   );
 }
 
