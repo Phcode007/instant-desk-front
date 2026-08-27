@@ -1,6 +1,6 @@
 import { ArrowRight, Headphones, ShieldCheck, Lightning, Users } from '@phosphor-icons/react';
 
-function Home() {
+function Landing() {
   return (
     <div className="min-h-screen bg-slate-100">
       
@@ -86,4 +86,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default Landing;
