@@ -1,4 +1,4 @@
-import { Headphones } from '@phosphor-icons/react';
+import icon from '../../assets/icon.png';
 import { Link } from 'react-router-dom';
 
 function Cadastro() {
@@ -70,7 +70,7 @@ function Cadastro() {
 
       <div className="hidden lg:flex bg-slate-800 min-h-screen w-full items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-white">
-          <Headphones size={80} weight="bold" className="text-blue-400" />
+          <img src={icon} alt="Instant Desk" className="h-20 w-auto" />
           <p className="text-2xl font-bold">Instant Desk</p>
           <p className="text-slate-300 text-center max-w-xs px-4">
             Crie sua conta e comece a organizar o suporte da sua equipe.

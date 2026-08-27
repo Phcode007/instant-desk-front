@@ -1,7 +1,8 @@
-import { ArrowRight, Headphones, ShieldCheck, Lightning, Users } from '@phosphor-icons/react';
+import { ArrowRight, ShieldCheck, Lightning, Users } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
+import icon from '../../assets/icon.png';
 
 function Landing() {
   return (
@@ -13,7 +14,7 @@ function Landing() {
         <div className="bg-slate-800 text-white py-20 px-4">
           <div className="container mx-auto text-center">
             <div className="flex justify-center mb-6">
-              <Headphones size={64} weight="bold" className="text-blue-400" />
+              <img src={icon} alt="Instant Desk" className="h-16 w-auto mx-auto" />
             </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
               Instant Desk
