@@ -1,16 +1,15 @@
-import Navbar from './components/navbar/Navbar';
-import Home from './pages/landing/Landing';
-import Footer from './components/footer/Footer';
+import { Routes, Route } from 'react-router-dom';
+import Landing from './pages/landing/Landing';
+import Login from './pages/login/Login';
+import Cadastro from './pages/cadastro/Cadastro';
 
 function App() {
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen bg-slate-100 pb-8">
-        <Home />
-      </div>
-      <Footer />
-    </>
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/cadastro" element={<Cadastro />} />
+    </Routes>
   );
 }
 
