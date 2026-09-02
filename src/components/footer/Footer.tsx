@@ -1,43 +1,53 @@
-import { GithubLogo, LinkedinLogo, Envelope } from '@phosphor-icons/react';
+import { Globe, ShareNetwork, Share } from '@phosphor-icons/react';
+import { useLanguageStore } from '../../store/useLanguageStore';
+import logo from '../../assets/logo.png';
 
 function Footer() {
-  const data = new Date().getFullYear();
+  const { t } = useLanguageStore();
+  const anoAtual = new Date().getFullYear();
 
   return (
-    <div className="bg-slate-800 text-white w-full py-6 mt-8">
-      <div className="container mx-auto px-4 flex flex-col items-center justify-center gap-2">
-        
-        <p className="text-lg font-bold">Instant Desk</p>
-        
-        <p className="text-sm text-slate-300">
-          © {data} - Sistema de Help Desk. Todos os direitos reservados.
-        </p>
+    <footer className="w-full bg-surface-container-low py-xl border-t border-outline-variant">
+      <div className="max-w-7xl mx-auto px-gutter">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-xl mb-xl">
+          <div>
+            <div className="flex items-center gap-xs mb-md">
+              <img src={logo} alt="Instant Desk" className="h-6 w-auto" />
+            </div>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">{t.footer.tagline}</p>
+          </div>
 
-        <div className="flex gap-4 mt-2">
-          <a 
-            href="https://github.com/Phcode007" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:text-slate-300 transition-colors"
-          >
-            <GithubLogo size={28} weight="bold" />
-          </a>
-          <a 
-            href="#" 
-            className="hover:text-slate-300 transition-colors"
-          >
-            <LinkedinLogo size={28} weight="bold" />
-          </a>
-          <a 
-            href="#" 
-            className="hover:text-slate-300 transition-colors"
-          >
-            <Envelope size={28} weight="bold" />
-          </a>
+          <div>
+            <h4 className="font-label-md text-label-md text-on-surface mb-md">{t.footer.product}</h4>
+            <ul className="space-y-sm">
+              <li className="font-body-sm text-body-sm text-on-surface-variant">{t.nav.features}</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-label-md text-label-md text-on-surface mb-md">{t.footer.company}</h4>
+            <ul className="space-y-sm">
+              <li className="font-body-sm text-body-sm text-on-surface-variant">Instant Desk</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-label-md text-label-md text-on-surface mb-md">{t.footer.social}</h4>
+            <div className="flex gap-md">
+              <Globe className="text-on-surface-variant hover:text-primary cursor-pointer" size={20} />
+              <ShareNetwork className="text-on-surface-variant hover:text-primary cursor-pointer" size={20} />
+              <Share className="text-on-surface-variant hover:text-primary cursor-pointer" size={20} />
+            </div>
+          </div>
         </div>
 
+        <div className="pt-md border-t border-outline-variant flex flex-col md:flex-row justify-between items-center gap-sm">
+          <span className="font-body-sm text-body-sm text-on-surface-variant">
+            © {anoAtual} Instant Desk. {t.footer.rights}
+          </span>
+        </div>
       </div>
-    </div>
+    </footer>
   );
 }
 
