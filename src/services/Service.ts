@@ -1,7 +1,16 @@
 import axios from 'axios';
+import { useAuthStore } from '../store/useAuthStore';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+});
+
+api.interceptors.request.use((config) => {
+  const token = useAuthStore.getState().usuario?.token;
+  if (token) {
+    config.headers.Authorization = token;
+  }
+  return config;
 });
 
 export const cadastrarUsuario = async <T>(
@@ -19,5 +28,13 @@ export const login = async <T>(
   setDados: (dado: T) => void,
 ) => {
   const resposta = await api.post<T>(url, dados);
+  setDados(resposta.data);
+};
+
+export const buscar = async <T>(
+  url: string,
+  setDados: (dado: T) => void,
+) => {
+  const resposta = await api.get<T>(url);
   setDados(resposta.data);
 };
