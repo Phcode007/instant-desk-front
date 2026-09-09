@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { translations, type Language } from '../i18n/translations';
+import { translations, type Language, type Translation } from '../i18n/translations';
 
 interface LanguageState {
   language: Language;
-  t: (typeof translations)['pt'];
+  t: Translation;
   toggleLanguage: () => void;
 }
 

@@ -1,5 +1,7 @@
 export type Language = 'pt' | 'en';
 
+export type Translation = typeof translations.pt
+
 export const translations = {
   pt: {
     nav: { features: 'Funcionalidades', login: 'Entrar', getStarted: 'Começar Agora' },
