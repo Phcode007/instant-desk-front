@@ -1,8 +1,56 @@
 export type Language = 'pt' | 'en';
 
-export type Translation = typeof translations.pt
+export interface Translation {
+  nav: { features: string; login: string; getStarted: string };
+  hero: {
+    badge: string;
+    title: string;
+    titleHighlight: string;
+    subtitle: string;
+    ctaPrimary: string;
+    ctaSecondary: string;
+    trustedBy: string;
+  };
+  logos: { placeholder: string };
+  features: {
+    title: string;
+    subtitle: string;
+    f1title: string;
+    f1desc: string;
+    f2title: string;
+    f2desc: string;
+    f3title: string;
+    f3desc: string;
+    f4title: string;
+    f4desc: string;
+  };
+  benefits: {
+    title: string;
+    b1title: string;
+    b1desc: string;
+    b2title: string;
+    b2desc: string;
+    b3title: string;
+    b3desc: string;
+  };
+  testimonial: { quote: string; author: string };
+  cta: {
+    title: string;
+    subtitle: string;
+    primary: string;
+    secondary: string;
+    note: string;
+  };
+  footer: {
+    tagline: string;
+    product: string;
+    company: string;
+    social: string;
+    rights: string;
+  };
+}
 
-export const translations = {
+export const translations: Record<Language, Translation> = {
   pt: {
     nav: { features: 'Funcionalidades', login: 'Entrar', getStarted: 'Começar Agora' },
     hero: {
@@ -109,4 +157,4 @@ export const translations = {
       rights: 'All rights reserved.',
     },
   },
-} as const;
+};
