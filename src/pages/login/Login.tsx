@@ -57,12 +57,9 @@ function Login() {
     try {
       await login<UsuarioLogin>('/users/logar', dadosLogin, (dadosRecebidos) => {
         autenticar(dadosRecebidos);
-        navigate('/');
+        navigate('/dashboard');
       });
     } catch {
-      // Mensagem genérica de propósito: não revela se o problema foi
-      // o e-mail (não existe) ou a senha (está errada) — boa prática
-      // de segurança, evita dar pista pra quem tenta adivinhar credenciais.
       setErroAutenticacao('E-mail ou senha incorretos. Tente novamente.');
     }
 
