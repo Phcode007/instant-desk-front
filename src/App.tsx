@@ -4,6 +4,7 @@ import Login from './pages/login/Login';
 import Cadastro from './pages/cadastro/Cadastro';
 import RotaProtegida from './components/RotaProtegida';
 import Tickets from './pages/tickets/Tickets';
+import Dashboard from './pages/dashboard/Dashboard';
 
 function App() {
   return (
@@ -16,6 +17,14 @@ function App() {
   element={
     <RotaProtegida>
       <Tickets />
+    </RotaProtegida>
+  }
+/>
+<Route
+  path="/dashboard"
+  element={
+    <RotaProtegida>
+      <Dashboard />
     </RotaProtegida>
   }
 />
