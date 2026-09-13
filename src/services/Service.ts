@@ -38,3 +38,12 @@ export const buscar = async <T>(
   const resposta = await api.get<T>(url);
   setDados(resposta.data);
 };
+
+export const enviar = async <T>(
+  url: string,
+  dados: object,
+  setDados: (dado: T) => void,
+) => {
+  const resposta = await api.post<T>(url, dados);
+  setDados(resposta.data);
+};

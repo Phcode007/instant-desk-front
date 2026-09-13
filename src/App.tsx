@@ -5,6 +5,7 @@ import Cadastro from './pages/cadastro/Cadastro';
 import RotaProtegida from './components/RotaProtegida';
 import Tickets from './pages/tickets/Tickets';
 import Dashboard from './pages/dashboard/Dashboard';
+import TicketDetail from './pages/tickets/TicketDetail';
 
 function App() {
   return (
@@ -25,6 +26,14 @@ function App() {
   element={
     <RotaProtegida>
       <Dashboard />
+    </RotaProtegida>
+  }
+/>
+<Route
+  path="/tickets/:id"
+  element={
+    <RotaProtegida>
+      <TicketDetail />
     </RotaProtegida>
   }
 />

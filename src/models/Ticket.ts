@@ -5,6 +5,7 @@ import type Comment from './Comment';
 
 export default interface Ticket {
   id: number;
+  criadoEm: string;
   titulo: string;
   descricao: string;
   status: string;
