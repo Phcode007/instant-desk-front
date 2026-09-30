@@ -37,6 +37,12 @@ function AppNavbar() {
           >
             Meus Tickets
           </Link>
+          <Link
+  to="/tickets/novo"
+  className="px-md py-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"
+>
+  Novo Ticket
+</Link>
         </nav>
 
         <div className="flex items-center gap-md">

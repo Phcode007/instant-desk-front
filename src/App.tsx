@@ -6,6 +6,7 @@ import RotaProtegida from './components/RotaProtegida';
 import Tickets from './pages/tickets/Tickets';
 import Dashboard from './pages/dashboard/Dashboard';
 import TicketDetail from './pages/tickets/TicketDetail';
+import NewTicket from './pages/tickets/NewTicket';
 
 function App() {
   return (
@@ -34,6 +35,14 @@ function App() {
   element={
     <RotaProtegida>
       <TicketDetail />
+    </RotaProtegida>
+  }
+/>
+<Route
+  path="/tickets/novo"
+  element={
+    <RotaProtegida>
+      <NewTicket />
     </RotaProtegida>
   }
 />

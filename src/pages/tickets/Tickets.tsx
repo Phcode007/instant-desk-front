@@ -1,5 +1,5 @@
 import { useState, useEffect, type ChangeEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   MagnifyingGlass,
   Plus,
@@ -86,13 +86,13 @@ function Tickets() {
                 Acompanhe e filtre os chamados de suporte da sua organização.
               </p>
             </div>
-            <button
-              type="button"
-              className="flex items-center gap-sm bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md px-lg py-3 rounded-xl shadow-md transition-all"
-            >
-              <Plus size={20} weight="bold" />
-              Novo Ticket
-            </button>
+            <Link
+  to="/tickets/novo"
+  className="flex items-center gap-sm bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md px-lg py-3 rounded-xl shadow-md transition-all"
+>
+  <Plus size={20} weight="bold" />
+  Novo Ticket
+</Link>
           </div>
 
           <div className="bg-surface-container-lowest p-md rounded-xl shadow-sm space-y-md">
