@@ -1,7 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, PaperPlaneRight } from '@phosphor-icons/react';
-import { buscar, enviar } from '../../services/Service';
+import { buscar, enviar, getApiErrorMessage } from '../../services/Service';
 import type Category from '../../models/Category';
 import type Priority from '../../models/Priority';
 import type Ticket from '../../models/Ticket';
@@ -21,6 +21,7 @@ function NewTicket() {
   const [categorias, setCategorias] = useState<Category[]>([]);
   const [prioridades, setPrioridades] = useState<Priority[]>([]);
   const [carregandoListas, setCarregandoListas] = useState<boolean>(true);
+  const [erro, setErro] = useState<string | null>(null);
 
   const [titulo, setTitulo] = useState<string>('');
   const [categoriaId, setCategoriaId] = useState<string>('');
@@ -39,10 +40,11 @@ function NewTicket() {
           buscar<Category[]>('/category', setCategorias),
           buscar<Priority[]>('/priorities', setPrioridades),
         ]);
-      } catch {
-        // listas ficam vazias — os selects mostram "nenhuma opção" naturalmente
+      } catch (error) {
+        setErro(getApiErrorMessage(error, 'Não foi possível carregar categorias e prioridades.'));
+      } finally {
+        setCarregandoListas(false);
       }
-      setCarregandoListas(false);
     }
     carregarListas();
   }, []);
@@ -82,10 +84,11 @@ function NewTicket() {
         },
         setSucesso,
       );
-    } catch {
-      alert('Não foi possível criar o chamado. Tente novamente.');
+    } catch (error) {
+      setErro(getApiErrorMessage(error, 'Não foi possível criar o chamado.'));
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   }
 
   return (
@@ -123,6 +126,7 @@ function NewTicket() {
 
           <Card className="sm:p-6">
             <form onSubmit={handleSubmit} className="flex flex-col gap-lg">
+              {erro && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{erro}</p>}
               <Input
                 id="titulo"
                 label="Título do chamado"

@@ -8,6 +8,9 @@ import AppNavbar from '../../components/navbar/AppNavbar';
 import { Badge, EmptyState, Input, LoadingState, Pagination, Table } from '../../components/ui';
 import type { TableColumn } from '../../components/ui';
 import { getTicketPriorityVariant, getTicketStatusVariant } from '../../utils/ticketPresentation';
+import { useAuthStore } from '../../store/useAuthStore';
+import { getApiErrorMessage } from '../../services/Service';
+import { UserRole } from '../../models/UserRole';
 
 type StatusFiltro = 'todos' | 'aberto' | 'em andamento' | 'resolvido' | 'fechado';
 
@@ -70,6 +73,7 @@ const colunasTickets: TableColumn<Ticket>[] = [
 ];
 
 function Tickets() {
+  const role = useAuthStore((state) => state.usuario?.role);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [resposta, setResposta] = useState<PaginatedTickets>({
     data: [],
@@ -80,17 +84,19 @@ function Tickets() {
   const [pagina, setPagina] = useState<number>(1);
   const [statusFiltro, setStatusFiltro] = useState<StatusFiltro>('todos');
   const [busca, setBusca] = useState<string>('');
+  const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
     async function carregarTickets() {
       setIsLoading(true);
+      setErro(null);
       try {
         await buscar<PaginatedTickets>(`/tickets?page=${pagina}&limit=10`, setResposta);
-      } catch {
-        // Falha ao carregar — a lista simplesmente permanece vazia,
-        // o estado "Nenhum ticket encontrado" cobre esse caso na tela.
+      } catch (error) {
+        setErro(getApiErrorMessage(error, 'Não foi possível carregar os chamados.'));
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
     carregarTickets();
   }, [pagina]);
@@ -117,10 +123,12 @@ function Tickets() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-lg">
             <div className="space-y-xs">
               <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">
-                Meus Tickets
+                {role === UserRole.USER ? 'Meus Tickets' : 'Fila de Tickets'}
               </h1>
               <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl">
-                Acompanhe e filtre os chamados de suporte da sua organização.
+                {role === UserRole.USER
+                  ? 'Acompanhe e filtre os chamados de suporte da sua organização.'
+                  : 'Consulte e acompanhe os chamados da sua empresa.'}
               </p>
             </div>
             <Link
@@ -165,6 +173,8 @@ function Tickets() {
               <div className="space-y-5 p-6">
                 <LoadingState variant="skeleton" label="Carregando chamados" lines={6} />
               </div>
+            ) : erro ? (
+              <div role="alert" className="p-6 text-sm text-red-700">{erro}</div>
             ) : (
               <Table
                 caption="Chamados da organização"

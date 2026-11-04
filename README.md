@@ -14,6 +14,7 @@ Validações disponíveis:
 ```bash
 npm run build
 npm run lint
+npm test
 ```
 
 Configure `VITE_API_URL` no ambiente local para apontar para o backend existente. Os serviços e contratos HTTP ficam em `src/services/` e não são alterados pelo Design System.
@@ -63,6 +64,20 @@ function SaveButton() {
 
 ## Perfis de acesso
 
-Os valores de perfil conhecidos (`USER`, `SUPPORT`, `ADMIN`) estão tipados em `src/models/UserRole.ts`. `role` é opcional no modelo de autenticação para não fabricar um perfil quando o backend não o envia. O login já persiste a resposta recebida pelo Zustand, incluindo `role` se presente; não existe fallback, escolha de papel no formulário ou autorização baseada em dados locais. O backend continua sendo a autoridade para todas as permissões.
+Os valores de perfil (`USER`, `SUPPORT`, `ADMIN`) estão tipados em `src/models/UserRole.ts`. O endpoint `POST /users/logar` retorna o usuário, o token `Bearer ...` e `role`; o frontend mantém esses dados na sessão do Zustand. A senha não é necessária na sessão e não é persistida.
 
-Layouts, menus e redirecionamentos por perfil dependem do contrato definitivo do backend: nome/capitalização do campo, formato do objeto de login, destino permitido de cada perfil e comportamento de sessão expirada/acesso negado.
+| Perfil | Funcionalidades exibidas |
+| --- | --- |
+| `USER` | Criar chamados, consultar os próprios chamados e interagir com eles. |
+| `SUPPORT` | Consultar a fila da empresa, responder chamados e atualizar status/prioridade. |
+| `ADMIN` | Acessar as funcionalidades anteriores, o dashboard, gerenciar usuários e editar os dados da empresa. |
+
+O cadastro público não envia um perfil selecionável e o backend continua responsável por criar `USER`. A interface esconde rotas e ações incompatíveis com o perfil, mas isso não é uma fronteira de segurança: cada operação continua sendo autorizada pelo backend. Em respostas HTTP 401, a sessão local é limpa e o usuário é enviado ao login; em 403, a sessão é preservada e a interface exibe acesso negado.
+
+## Integração administrativa
+
+O gerenciamento de usuários usa os endpoints existentes `GET /users/all`, `GET /users/:id` e `PUT /users/:id/role`, enviando `{ "role": "USER" | "SUPPORT" | "ADMIN" }`. A própria conta não tem ação de alteração de perfil na interface. O backend valida novamente o papel ADMIN, o vínculo empresarial, a regra contra autoalteração e a integridade do último administrador.
+
+A tela **Empresa** utiliza `GET /companies` e `PUT /companies` para editar os dados da empresa associada à sessão. O escopo e as permissões são determinados pelo backend; o frontend não envia um `company_id` escolhido pelo usuário.
+
+Os testes automatizados são executados com `npm test` (Vitest e Testing Library).

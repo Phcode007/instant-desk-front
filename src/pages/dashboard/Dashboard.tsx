@@ -9,7 +9,7 @@ import {
   Headset,
   Ticket as TicketIcon,
 } from '@phosphor-icons/react';
-import { buscar } from '../../services/Service';
+import { buscar, getApiErrorMessage } from '../../services/Service';
 import { useAuthStore } from '../../store/useAuthStore';
 import type TicketStats from '../../models/TicketStats';
 import type PaginatedTickets from '../../models/PaginatedTickets';
@@ -32,6 +32,7 @@ function Dashboard() {
   const { usuario } = useAuthStore();
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [erro, setErro] = useState<string | null>(null);
   const [stats, setStats] = useState<TicketStats>({
     abertosHoje: 0,
     emAndamento: 0,
@@ -53,11 +54,11 @@ function Dashboard() {
           buscar<TicketStats>('/tickets/stats', setStats),
           buscar<PaginatedTickets>('/tickets?page=1&limit=5', setRecentes),
         ]);
-      } catch {
-        // Mantém os valores zerados/vazios — o estado visual de "sem dados"
-        // já cobre tanto "empresa nova sem tickets" quanto "falha ao buscar".
+      } catch (error) {
+        setErro(getApiErrorMessage(error, 'Não foi possível carregar os indicadores.'));
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
     carregar();
   }, []);
@@ -78,7 +79,9 @@ function Dashboard() {
             </p>
           </div>
 
-          {isLoading ? (
+          {erro && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{erro}</p>}
+
+          {erro ? null : isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter animate-pulse">
               {[1, 2, 3, 4].map((n) => (
                 <div key={n} className="bg-surface-container-lowest rounded-xl p-lg h-36" />
