@@ -13,13 +13,15 @@ import {
   Clock,
   ChatCircle,
 } from '@phosphor-icons/react';
-import { buscar, enviar } from '../../services/Service';
+import { atualizar, buscar, enviar, getApiErrorMessage } from '../../services/Service';
 import type Ticket from '../../models/Ticket';
 import type Comment from '../../models/Comment';
+import type Priority from '../../models/Priority';
 import { useAuthStore } from '../../store/useAuthStore';
 import AppNavbar from '../../components/navbar/AppNavbar';
-import { Badge } from '../../components/ui';
+import { Badge, Button, useToast } from '../../components/ui';
 import { getTicketStatusVariant } from '../../utils/ticketPresentation';
+import { UserRole } from '../../models/UserRole';
 
 interface ComentarioOtimista extends Comment {
   enviando?: boolean;
@@ -49,28 +51,47 @@ function TicketDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { usuario } = useAuthStore();
+  const { showToast } = useToast();
 
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [comentarios, setComentarios] = useState<ComentarioOtimista[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [novaMensagem, setNovaMensagem] = useState<string>('');
+  const [prioridades, setPrioridades] = useState<Priority[]>([]);
+  const [statusDestino, setStatusDestino] = useState('');
+  const [prioridadeDestino, setPrioridadeDestino] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function carregar() {
       setIsLoading(true);
+      setErro(null);
       try {
         await Promise.all([
           buscar<Ticket>(`/tickets/${id}`, setTicket),
           buscar<Comment[]>(`/comments/ticket/${id}`, setComentarios),
         ]);
-      } catch {
-        // ticket permanece null — a tela cobre esse caso com "Ticket não encontrado"
+      } catch (error) {
+        setErro(getApiErrorMessage(error, 'Não foi possível carregar este chamado.'));
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
     carregar();
   }, [id]);
+
+  useEffect(() => {
+    if (usuario?.role !== UserRole.SUPPORT && usuario?.role !== UserRole.ADMIN) return;
+    buscar<Priority[]>('/priorities', setPrioridades).catch((error: unknown) => {
+      showToast({
+        title: 'Falha ao carregar prioridades',
+        description: getApiErrorMessage(error, 'Não foi possível carregar as prioridades.'),
+        variant: 'error',
+      });
+    });
+  }, [showToast, usuario?.role]);
 
   useEffect(() => {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: 'smooth' });
@@ -87,7 +108,7 @@ function TicketDetail() {
       comentario: texto,
       data: new Date().toISOString(),
       ticket,
-      user: { id: usuario.id, nome: usuario.nome, usuario: usuario.usuario, senha: '' },
+      user: { id: usuario.id, nome: usuario.nome, usuario: usuario.usuario, role: usuario.role },
       enviando: true,
     };
 
@@ -104,9 +125,40 @@ function TicketDetail() {
           );
         },
       );
-    } catch {
+    } catch (error) {
       setComentarios((atual) => atual.filter((c) => c.id !== idTemporario));
-      alert('Não foi possível enviar a mensagem. Tente novamente.');
+      showToast({
+        title: 'Não foi possível enviar a mensagem',
+        description: getApiErrorMessage(error, 'Tente novamente.'),
+        variant: 'error',
+      });
+    }
+  }
+
+  async function atualizarChamado(e: FormEvent) {
+    e.preventDefault();
+    if (!ticket) return;
+
+    setIsUpdating(true);
+    try {
+      await atualizar<Ticket>(
+        '/tickets',
+        {
+          id: ticket.id,
+          status: statusDestino || ticket.status,
+          priority: { id: Number(prioridadeDestino || ticket.priority.id) },
+        },
+        setTicket,
+      );
+      showToast({ title: 'Chamado atualizado', description: 'Status e prioridade foram salvos.', variant: 'success' });
+    } catch (error) {
+      showToast({
+        title: 'Não foi possível atualizar o chamado',
+        description: getApiErrorMessage(error, 'Tente novamente.'),
+        variant: 'error',
+      });
+    } finally {
+      setIsUpdating(false);
     }
   }
 
@@ -142,7 +194,7 @@ function TicketDetail() {
       <>
         <AppNavbar />
         <main className="w-full pt-header-height bg-background min-h-screen flex items-center justify-center">
-          <p className="text-on-surface-variant">Ticket não encontrado.</p>
+          <p role="alert" className="text-on-surface-variant">{erro ?? 'Ticket não encontrado.'}</p>
         </main>
       </>
     );
@@ -153,6 +205,8 @@ function TicketDetail() {
       <AppNavbar />
       <main className="w-full pt-header-height bg-background min-h-screen">
         <div className="w-full max-w-5xl mx-auto px-lg py-xl flex flex-col gap-lg">
+
+          {erro && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{erro}</p>}
 
           <div className="flex items-center justify-between gap-md">
             <button
@@ -219,6 +273,43 @@ function TicketDetail() {
               <p className="text-on-surface font-body-md text-body-md leading-relaxed">{ticket.descricao}</p>
             </div>
           </section>
+
+          {(usuario?.role === UserRole.SUPPORT || usuario?.role === UserRole.ADMIN) && (
+            <form
+              onSubmit={(event) => void atualizarChamado(event)}
+              className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-end"
+            >
+              <label className="flex-1 space-y-1 text-sm font-medium text-slate-700" htmlFor="ticket-status">
+                Status
+                <select
+                  id="ticket-status"
+                  value={statusDestino || ticket.status}
+                  onChange={(event) => setStatusDestino(event.target.value)}
+                  className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2"
+                >
+                  {['aberto', 'em andamento', 'resolvido', 'fechado'].map((status) => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex-1 space-y-1 text-sm font-medium text-slate-700" htmlFor="ticket-priority">
+                Prioridade
+                <select
+                  id="ticket-priority"
+                  value={prioridadeDestino || String(ticket.priority.id)}
+                  onChange={(event) => setPrioridadeDestino(event.target.value)}
+                  className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2"
+                >
+                  {prioridades.map((priority) => (
+                    <option key={priority.id} value={priority.id}>{priority.nome}</option>
+                  ))}
+                </select>
+              </label>
+              <Button type="submit" loading={isUpdating}>
+                Salvar atendimento
+              </Button>
+            </form>
+          )}
 
           <section className="bg-surface-container-lowest rounded-xl shadow-sm flex flex-col overflow-hidden">
             <header className="px-lg py-md bg-surface-container-low flex items-center gap-sm">

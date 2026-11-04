@@ -3,10 +3,14 @@ import { SignOut } from '@phosphor-icons/react';
 import { useAuthStore } from '../../store/useAuthStore';
 import logo from '../../assets/logo.png';
 import { Avatar, Button, Header } from '../ui';
+import { getRoleHome } from '../../utils/auth';
+import { UserRole } from '../../models/UserRole';
 
 function AppNavbar() {
   const navigate = useNavigate();
   const { usuario, logout } = useAuthStore();
+  const role = usuario?.role;
+  const home = role ? getRoleHome(role) : '/login';
 
   function sair() {
     logout();
@@ -15,6 +19,7 @@ function AppNavbar() {
 
   const navigation = (
     <>
+      {role === UserRole.ADMIN && (
       <NavLink
         to="/dashboard"
         className={({ isActive }) =>
@@ -25,6 +30,7 @@ function AppNavbar() {
       >
         Dashboard
       </NavLink>
+      )}
       <NavLink
         to="/tickets"
         end
@@ -34,8 +40,20 @@ function AppNavbar() {
           }`
         }
       >
-        Meus Tickets
+        {role === UserRole.USER ? 'Meus Tickets' : 'Fila de Tickets'}
       </NavLink>
+      {role === UserRole.ADMIN && (
+        <NavLink
+          to="/admin/users"
+          className={({ isActive }) =>
+            `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              isActive ? 'bg-brand-50 text-brand-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+            }`
+          }
+        >
+          Usuários
+        </NavLink>
+      )}
       <NavLink
         to="/tickets/novo"
         className={({ isActive }) =>
@@ -46,6 +64,18 @@ function AppNavbar() {
       >
         Novo Ticket
       </NavLink>
+      {role === UserRole.ADMIN && (
+        <NavLink
+          to="/admin/company"
+          className={({ isActive }) =>
+            `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              isActive ? 'bg-brand-50 text-brand-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+            }`
+          }
+        >
+          Empresa
+        </NavLink>
+      )}
     </>
   );
 
@@ -53,7 +83,7 @@ function AppNavbar() {
     <Header
       position="fixed"
       brand={
-        <Link to="/dashboard" aria-label="Instant Desk — Dashboard" className="shrink-0">
+        <Link to={home} aria-label="Instant Desk — página inicial" className="shrink-0">
           <img src={logo} alt="Instant Desk" className="h-8 w-auto" />
         </Link>
       }

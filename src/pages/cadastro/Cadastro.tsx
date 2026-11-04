@@ -14,6 +14,7 @@ import {
 import { cadastrarUsuario } from '../../services/Service';
 import type User from '../../models/User';
 import AuthBrandingPanel from '../../components/auth/AuthBrandingPanel';
+import { UserRole } from '../../models/UserRole';
 
 interface DadosCadastro {
   nome: string;
@@ -53,7 +54,7 @@ function Cadastro() {
     id: 0,
     nome: '',
     usuario: '',
-    senha: '',
+    role: UserRole.USER,
   });
 
   useEffect(() => {
@@ -61,7 +62,7 @@ function Cadastro() {
       alert('Conta criada com sucesso! Faça login para continuar.');
       navigate('/login');
     }
-  }, [usuarioCriado]);
+  }, [usuarioCriado, navigate]);
 
   function atualizarEstado(e: ChangeEvent<HTMLInputElement>) {
     setDadosCadastro({

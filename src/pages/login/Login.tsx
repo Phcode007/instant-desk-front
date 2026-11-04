@@ -14,6 +14,8 @@ import { login } from '../../services/Service';
 import type UsuarioLogin from '../../models/UsuarioLogin';
 import { useAuthStore } from '../../store/useAuthStore';
 import AuthBrandingPanel from '../../components/auth/AuthBrandingPanel';
+import { getApiErrorMessage } from '../../services/Service';
+import { getRoleHome, isUserRole } from '../../utils/auth';
 
 interface DadosLogin {
   usuario: string;
@@ -56,14 +58,27 @@ function Login() {
 
     try {
       await login<UsuarioLogin>('/users/logar', dadosLogin, (dadosRecebidos) => {
-        autenticar(dadosRecebidos);
-        navigate('/dashboard');
+        if (!isUserRole(dadosRecebidos.role)) {
+          throw new Error('O servidor retornou um perfil de acesso inválido.');
+        }
+        if (typeof dadosRecebidos.token !== 'string' || !dadosRecebidos.token.startsWith('Bearer ')) {
+          throw new Error('O servidor retornou um token de autenticação inválido.');
+        }
+        const sessao = {
+          id: dadosRecebidos.id,
+          nome: dadosRecebidos.nome,
+          usuario: dadosRecebidos.usuario,
+          token: dadosRecebidos.token,
+          role: dadosRecebidos.role,
+        };
+        autenticar(sessao);
+        navigate(getRoleHome(dadosRecebidos.role), { replace: true });
       });
-    } catch {
-      setErroAutenticacao('E-mail ou senha incorretos. Tente novamente.');
+    } catch (error) {
+      setErroAutenticacao(getApiErrorMessage(error, 'Não foi possível entrar. Verifique sua conexão e tente novamente.'));
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   }
 
   return (
@@ -82,7 +97,7 @@ function Login() {
             <div className="mb-xl p-md rounded-xl bg-error-container text-on-error-container flex items-start gap-md shadow-sm">
               <WarningCircle size={20} weight="fill" className="mt-0.5 flex-shrink-0" />
               <div>
-                <div className="font-label-md">Credenciais inválidas</div>
+                <div className="font-label-md">Não foi possível entrar</div>
                 <div className="font-body-sm">{erroAutenticacao}</div>
               </div>
             </div>
