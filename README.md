@@ -60,3 +60,9 @@ function SaveButton() {
   );
 }
 ```
+
+## Perfis de acesso
+
+Os valores de perfil conhecidos (`USER`, `SUPPORT`, `ADMIN`) estão tipados em `src/models/UserRole.ts`. `role` é opcional no modelo de autenticação para não fabricar um perfil quando o backend não o envia. O login já persiste a resposta recebida pelo Zustand, incluindo `role` se presente; não existe fallback, escolha de papel no formulário ou autorização baseada em dados locais. O backend continua sendo a autoridade para todas as permissões.
+
+Layouts, menus e redirecionamentos por perfil dependem do contrato definitivo do backend: nome/capitalização do campo, formato do objeto de login, destino permitido de cada perfil e comportamento de sessão expirada/acesso negado.
