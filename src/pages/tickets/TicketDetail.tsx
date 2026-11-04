@@ -18,17 +18,12 @@ import type Ticket from '../../models/Ticket';
 import type Comment from '../../models/Comment';
 import { useAuthStore } from '../../store/useAuthStore';
 import AppNavbar from '../../components/navbar/AppNavbar';
+import { Badge } from '../../components/ui';
+import { getTicketStatusVariant } from '../../utils/ticketPresentation';
 
 interface ComentarioOtimista extends Comment {
   enviando?: boolean;
 }
-
-const statusEstilo: Record<string, string> = {
-  aberto: 'bg-secondary-container text-on-secondary-fixed-variant',
-  'em andamento': 'bg-amber-50 text-amber-900',
-  resolvido: 'bg-emerald-50 text-emerald-800',
-  fechado: 'bg-surface-container text-on-surface-variant',
-};
 
 function formatarTempoRelativo(dataIso: string): string {
   const diffMs = Date.now() - new Date(dataIso).getTime();
@@ -202,9 +197,9 @@ function TicketDetail() {
               </div>
 
               <div className="flex flex-wrap items-center gap-sm shrink-0">
-                <span className={`inline-flex items-center px-md py-1 rounded-full font-label-md text-label-md capitalize ${statusEstilo[ticket.status] ?? statusEstilo.fechado}`}>
+                <Badge variant={getTicketStatusVariant(ticket.status)} dot size="md">
                   {ticket.status}
-                </span>
+                </Badge>
                 <span className="inline-flex items-center gap-xs px-md py-1 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md">
                   <Receipt size={16} />
                   {ticket.category.nome}

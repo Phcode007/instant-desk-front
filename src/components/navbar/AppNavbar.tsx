@@ -1,7 +1,8 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { SignOut } from '@phosphor-icons/react';
 import { useAuthStore } from '../../store/useAuthStore';
 import logo from '../../assets/logo.png';
+import { Avatar, Button, Header } from '../ui';
 
 function AppNavbar() {
   const navigate = useNavigate();
@@ -12,56 +13,71 @@ function AppNavbar() {
     navigate('/login');
   }
 
-  const iniciais = usuario?.nome
-    ?.split(' ')
-    .slice(0, 2)
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase();
+  const navigation = (
+    <>
+      <NavLink
+        to="/dashboard"
+        className={({ isActive }) =>
+          `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            isActive ? 'bg-brand-50 text-brand-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+          }`
+        }
+      >
+        Dashboard
+      </NavLink>
+      <NavLink
+        to="/tickets"
+        end
+        className={({ isActive }) =>
+          `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            isActive ? 'bg-brand-50 text-brand-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+          }`
+        }
+      >
+        Meus Tickets
+      </NavLink>
+      <NavLink
+        to="/tickets/novo"
+        className={({ isActive }) =>
+          `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            isActive ? 'bg-brand-50 text-brand-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+          }`
+        }
+      >
+        Novo Ticket
+      </NavLink>
+    </>
+  );
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant">
-      <div className="h-header-height w-full px-lg flex items-center justify-between gap-md">
-        <img src={logo} alt="Instant Desk" className="h-8 w-auto" />
-
-        <nav className="hidden md:flex items-center gap-xs">
-          <Link
-            to="/dashboard"
-            className="px-md py-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"
-          >
-            Dashboard
-          </Link>
-          <Link
-            to="/tickets"
-            className="px-md py-sm rounded-lg font-label-md text-label-md bg-secondary-container text-on-secondary-fixed-variant transition-colors"
-          >
-            Meus Tickets
-          </Link>
-          <Link
-  to="/tickets/novo"
-  className="px-md py-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"
->
-  Novo Ticket
-</Link>
-        </nav>
-
-        <div className="flex items-center gap-md">
-          <div className="hidden sm:flex items-center gap-sm">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-label-sm text-[12px]">
-              {iniciais}
+    <Header
+      position="fixed"
+      brand={
+        <Link to="/dashboard" aria-label="Instant Desk — Dashboard" className="shrink-0">
+          <img src={logo} alt="Instant Desk" className="h-8 w-auto" />
+        </Link>
+      }
+      navigation={navigation}
+      mobileNavigation={navigation}
+      actions={
+        <>
+          {usuario?.nome && (
+            <div className="hidden items-center gap-2 sm:flex">
+              <Avatar name={usuario.nome} size="sm" />
+              <span className="max-w-40 truncate text-sm font-medium text-slate-800">{usuario.nome}</span>
             </div>
-            <span className="font-label-md text-label-md text-on-surface">{usuario?.nome}</span>
-          </div>
-          <button
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={sair}
             aria-label="Sair"
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"
-          >
-            <SignOut size={20} />
-          </button>
-        </div>
-      </div>
-    </header>
+            leadingIcon={<SignOut size={18} aria-hidden="true" />}
+            className="!px-2"
+          />
+        </>
+      }
+    />
   );
 }
 

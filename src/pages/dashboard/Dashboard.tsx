@@ -14,13 +14,8 @@ import { useAuthStore } from '../../store/useAuthStore';
 import type TicketStats from '../../models/TicketStats';
 import type PaginatedTickets from '../../models/PaginatedTickets';
 import AppNavbar from '../../components/navbar/AppNavbar';
-
-const statusEstilo: Record<string, { texto: string; ponto: string; cor: string }> = {
-  aberto: { texto: 'text-primary', ponto: 'bg-primary', cor: '#001d4e' },
-  'em andamento': { texto: 'text-[#d97706]', ponto: 'bg-[#d97706]', cor: '#d97706' },
-  resolvido: { texto: 'text-[#059669]', ponto: 'bg-[#059669]', cor: '#059669' },
-  fechado: { texto: 'text-[#64748b]', ponto: 'bg-[#64748b]', cor: '#64748b' },
-};
+import { Badge } from '../../components/ui';
+import { getTicketStatusColor, getTicketStatusVariant } from '../../utils/ticketPresentation';
 
 function formatarTempoRelativo(dataIso: string): string {
   const diffMs = Date.now() - new Date(dataIso).getTime();
@@ -172,7 +167,6 @@ function Dashboard() {
 
                   <div className="flex flex-col gap-xs">
                     {recentes.data.map((ticket) => {
-                      const estilo = statusEstilo[ticket.status] ?? statusEstilo.fechado;
                       return (
                         <div
                           key={ticket.id}
@@ -184,10 +178,9 @@ function Dashboard() {
                               <span className="font-label-md text-label-md text-on-surface font-semibold truncate">
                                 #{ticket.id} - {ticket.titulo}
                               </span>
-                              <span className={`inline-flex items-center gap-1 text-label-sm font-label-sm font-semibold ${estilo.texto}`}>
-                                <span className={`w-1.5 h-1.5 rounded-full ${estilo.ponto}`} />
+                              <Badge variant={getTicketStatusVariant(ticket.status)} dot>
                                 {ticket.status}
-                              </span>
+                              </Badge>
                             </div>
                             <div className="flex items-center gap-md text-on-surface-variant font-label-sm text-label-sm">
                               <span>{ticket.category.nome}</span>
@@ -214,7 +207,7 @@ function Dashboard() {
                           key={item.status}
                           style={{
                             width: `${(item.total / stats.total) * 100}%`,
-                            backgroundColor: statusEstilo[item.status]?.cor ?? '#64748b',
+                            backgroundColor: getTicketStatusColor(item.status),
                           }}
                           title={`${item.status}: ${item.total}`}
                         />
@@ -223,13 +216,16 @@ function Dashboard() {
 
                     <div className="flex flex-col gap-md mt-xs">
                       {stats.porStatus.map((item) => {
-                        const estilo = statusEstilo[item.status] ?? statusEstilo.fechado;
                         const percentual = Math.round((item.total / stats.total) * 100);
                         return (
                           <div key={item.status} className="flex flex-col gap-xs">
                             <div className="flex items-center justify-between font-label-md text-label-md">
                               <span className="flex items-center gap-xs text-on-surface capitalize">
-                                <span className={`w-2.5 h-2.5 rounded-full ${estilo.ponto}`} />
+                                <span
+                                  aria-hidden="true"
+                                  className="h-2.5 w-2.5 rounded-full"
+                                  style={{ backgroundColor: getTicketStatusColor(item.status) }}
+                                />
                                 {item.status}
                               </span>
                               <span className="text-on-surface font-semibold">
@@ -239,7 +235,7 @@ function Dashboard() {
                             <div className="w-full h-2 rounded-full bg-surface-container overflow-hidden">
                               <div
                                 className="h-full rounded-full"
-                                style={{ width: `${percentual}%`, backgroundColor: estilo.cor }}
+                                style={{ width: `${percentual}%`, backgroundColor: getTicketStatusColor(item.status) }}
                               />
                             </div>
                           </div>

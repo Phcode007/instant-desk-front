@@ -1,24 +1,15 @@
 import { useState, useEffect, type ChangeEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import {
-  MagnifyingGlass,
-  Plus,
-  CaretLeft,
-  CaretRight,
-  Tray,
-} from '@phosphor-icons/react';
+import { Link } from 'react-router-dom';
+import { MagnifyingGlass, Plus, Tray } from '@phosphor-icons/react';
 import { buscar } from '../../services/Service';
 import type PaginatedTickets from '../../models/PaginatedTickets';
+import type Ticket from '../../models/Ticket';
 import AppNavbar from '../../components/navbar/AppNavbar';
+import { Badge, EmptyState, Input, LoadingState, Pagination, Table } from '../../components/ui';
+import type { TableColumn } from '../../components/ui';
+import { getTicketPriorityVariant, getTicketStatusVariant } from '../../utils/ticketPresentation';
 
 type StatusFiltro = 'todos' | 'aberto' | 'em andamento' | 'resolvido' | 'fechado';
-
-const statusEstilo: Record<string, string> = {
-  aberto: 'bg-secondary-container text-on-secondary-fixed-variant',
-  'em andamento': 'bg-surface-container text-on-surface-variant',
-  resolvido: 'bg-success-fixed text-on-success-fixed',
-  fechado: 'bg-surface-container-low text-on-surface-variant',
-};
 
 function formatarTempoRelativo(dataIso: string): string {
   const diffMs = Date.now() - new Date(dataIso).getTime();
@@ -30,9 +21,55 @@ function formatarTempoRelativo(dataIso: string): string {
   return `há ${dias} ${dias === 1 ? 'dia' : 'dias'}`;
 }
 
-function Tickets() {
-  const navigate = useNavigate();
+const colunasTickets: TableColumn<Ticket>[] = [
+  {
+    key: 'ticket',
+    header: 'Ticket & Título',
+    render: (ticket) => (
+      <Link
+        to={`/tickets/${ticket.id}`}
+        aria-label={`Abrir chamado ${ticket.id}: ${ticket.titulo}`}
+        className="flex items-start gap-2 hover:text-brand-700"
+      >
+        <span className="shrink-0 rounded bg-brand-50 px-2 py-0.5 font-mono text-[11px] font-semibold text-brand-700">
+          #{ticket.id}
+        </span>
+        <span className="line-clamp-1 font-medium text-slate-900">{ticket.titulo}</span>
+      </Link>
+    ),
+  },
+  {
+    key: 'category',
+    header: 'Categoria',
+    className: 'hidden md:table-cell',
+    render: (ticket) => <Badge variant="neutral">{ticket.category.nome}</Badge>,
+  },
+  {
+    key: 'priority',
+    header: 'Prioridade',
+    render: (ticket) => <Badge variant={getTicketPriorityVariant(ticket.priority.nome)}>{ticket.priority.nome}</Badge>,
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    render: (ticket) => <Badge variant={getTicketStatusVariant(ticket.status)} dot>{ticket.status}</Badge>,
+  },
+  {
+    key: 'requester',
+    header: 'Solicitante',
+    className: 'hidden lg:table-cell',
+    render: (ticket) => ticket.user.nome,
+  },
+  {
+    key: 'updated',
+    header: 'Atualização',
+    className: 'hidden sm:table-cell',
+    headerClassName: 'text-right',
+    render: (ticket) => <span className="text-slate-500">{formatarTempoRelativo(ticket.data)}</span>,
+  },
+];
 
+function Tickets() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [resposta, setResposta] = useState<PaginatedTickets>({
     data: [],
@@ -95,20 +132,15 @@ function Tickets() {
 </Link>
           </div>
 
-          <div className="bg-surface-container-lowest p-md rounded-xl shadow-sm space-y-md">
-            <div className="relative flex-1">
-              <MagnifyingGlass
-                size={20}
-                className="absolute left-md top-1/2 -translate-y-1/2 text-outline pointer-events-none"
-              />
-              <input
-                type="text"
-                value={busca}
-                onChange={handleBusca}
-                placeholder="Buscar por título ou descrição do chamado..."
-                className="w-full pl-11 pr-md py-3 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:shadow-[0_0_0_2px_#003178] transition-all"
-              />
-            </div>
+          <div className="space-y-md rounded-xl border border-slate-200 bg-white p-4 shadow-card">
+            <Input
+              type="search"
+              aria-label="Buscar por título ou descrição do chamado"
+              value={busca}
+              onChange={handleBusca}
+              placeholder="Buscar por título ou descrição do chamado..."
+              leadingIcon={<MagnifyingGlass size={18} aria-hidden="true" />}
+            />
 
             <div className="flex items-center gap-xs overflow-x-auto pb-xs">
               {(['todos', 'aberto', 'em andamento', 'resolvido', 'fechado'] as StatusFiltro[]).map((status) => (
@@ -128,104 +160,39 @@ function Tickets() {
             </div>
           </div>
 
-          <div className="relative bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+          <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card">
             {isLoading ? (
-              <div className="w-full p-lg space-y-sm animate-pulse">
-                {[1, 2, 3, 4].map((n) => (
-                  <div key={n} className="h-16 bg-surface-container-low rounded-lg w-full" />
-                ))}
-              </div>
-            ) : ticketsFiltrados.length === 0 ? (
-              <div className="flex flex-col items-center justify-center text-center p-xl md:py-24 space-y-md">
-                <div className="w-20 h-20 rounded-full bg-surface-container-low flex items-center justify-center text-outline">
-                  <Tray size={40} />
-                </div>
-                <div className="space-y-xs max-w-md">
-                  <h2 className="font-headline-md text-headline-md text-on-surface">Nenhum ticket encontrado</h2>
-                  <p className="font-body-md text-body-md text-on-surface-variant">
-                    Não há chamados com os filtros selecionados.
-                  </p>
-                </div>
+              <div className="space-y-5 p-6">
+                <LoadingState variant="skeleton" label="Carregando chamados" lines={6} />
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="bg-surface-container-low font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
-                      <th className="py-md px-lg font-semibold">Ticket &amp; Título</th>
-                      <th className="py-md px-md font-semibold hidden md:table-cell">Categoria</th>
-                      <th className="py-md px-md font-semibold">Prioridade</th>
-                      <th className="py-md px-md font-semibold">Status</th>
-                      <th className="py-md px-md font-semibold hidden lg:table-cell">Solicitante</th>
-                      <th className="py-md px-md font-semibold hidden sm:table-cell">Atualização</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ticketsFiltrados.map((ticket) => (
-                      <tr
-                        key={ticket.id}
-                        onClick={() => navigate(`/tickets/${ticket.id}`)}
-                        className="hover:bg-primary/[0.03] transition-colors cursor-pointer border-t border-outline-variant/30"
-                      >
-                        <td className="py-md px-lg">
-                          <div className="flex items-start gap-sm">
-                            <span className="font-label-sm text-label-sm font-semibold text-primary bg-primary-fixed px-2 py-0.5 rounded shrink-0">
-                              #{ticket.id}
-                            </span>
-                            <p className="font-label-md text-label-md text-on-surface line-clamp-1">{ticket.titulo}</p>
-                          </div>
-                        </td>
-                        <td className="py-md px-md hidden md:table-cell">
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-surface-container-low font-label-sm text-label-sm text-on-surface-variant">
-                            {ticket.category.nome}
-                          </span>
-                        </td>
-                        <td className="py-md px-md">
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
-                            {ticket.priority.nome}
-                          </span>
-                        </td>
-                        <td className="py-md px-md">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full font-label-sm text-label-sm font-semibold capitalize ${statusEstilo[ticket.status] ?? 'bg-surface-container text-on-surface-variant'}`}>
-                            {ticket.status}
-                          </span>
-                        </td>
-                        <td className="py-md px-md hidden lg:table-cell font-body-sm text-body-sm text-on-surface">
-                          {ticket.user.nome}
-                        </td>
-                        <td className="py-md px-md hidden sm:table-cell font-body-sm text-body-sm text-on-surface-variant">
-                          {formatarTempoRelativo(ticket.data)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <Table
+                caption="Chamados da organização"
+                columns={colunasTickets}
+                rows={ticketsFiltrados}
+                rowKey={(ticket) => ticket.id}
+                emptyState={
+                  <EmptyState
+                    icon={<Tray size={24} aria-hidden="true" />}
+                    title="Nenhum ticket encontrado"
+                    description="Não há chamados com os filtros selecionados."
+                    className="border-0 bg-transparent py-10"
+                  />
+                }
+              />
             )}
 
             {!isLoading && resposta.totalPages > 1 && (
-              <div className="flex items-center justify-between gap-md p-lg border-t border-outline-variant">
-                <span className="font-label-sm text-label-sm text-on-surface-variant">
+              <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 sm:flex-row">
+                <span className="text-xs text-slate-500">
                   Página {resposta.page} de {resposta.totalPages} — {resposta.total} tickets
                 </span>
-                <div className="flex items-center gap-xs">
-                  <button
-                    type="button"
-                    disabled={pagina <= 1}
-                    onClick={() => setPagina((p) => p - 1)}
-                    className="p-2 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container disabled:opacity-40 disabled:pointer-events-none transition-colors"
-                  >
-                    <CaretLeft size={18} />
-                  </button>
-                  <button
-                    type="button"
-                    disabled={pagina >= resposta.totalPages}
-                    onClick={() => setPagina((p) => p + 1)}
-                    className="p-2 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container disabled:opacity-40 disabled:pointer-events-none transition-colors"
-                  >
-                    <CaretRight size={18} />
-                  </button>
-                </div>
+                <Pagination
+                  page={pagina}
+                  totalPages={resposta.totalPages}
+                  onPageChange={setPagina}
+                  label="Páginas de chamados"
+                />
               </div>
             )}
           </div>
