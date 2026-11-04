@@ -76,6 +76,18 @@ function AppNavbar() {
           Empresa
         </NavLink>
       )}
+      {role === UserRole.ADMIN && (
+        <NavLink
+          to="/admin/catalogs"
+          className={({ isActive }) =>
+            `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              isActive ? 'bg-brand-50 text-brand-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+            }`
+          }
+        >
+          Categorias e prioridades
+        </NavLink>
+      )}
     </>
   );
 

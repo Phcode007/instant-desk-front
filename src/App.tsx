@@ -13,6 +13,7 @@ import { useToast } from './components/ui/useToast';
 import { AUTH_FORBIDDEN_EVENT, AUTH_UNAUTHORIZED_EVENT } from './services/Service';
 import UsersAdmin from './pages/admin/UsersAdmin';
 import CompanySettings from './pages/admin/CompanySettings';
+import CatalogSettings from './pages/admin/CatalogSettings';
 import { UserRole } from './models/UserRole';
 
 function App() {
@@ -68,6 +69,14 @@ function App() {
             element={
               <RotaProtegida roles={[UserRole.ADMIN]}>
                 <CompanySettings />
+              </RotaProtegida>
+            }
+          />
+          <Route
+            path="/admin/catalogs"
+            element={
+              <RotaProtegida roles={[UserRole.ADMIN]}>
+                <CatalogSettings />
               </RotaProtegida>
             }
           />

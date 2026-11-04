@@ -70,7 +70,7 @@ Os valores de perfil (`USER`, `SUPPORT`, `ADMIN`) estão tipados em `src/models/
 | --- | --- |
 | `USER` | Criar chamados, consultar os próprios chamados e interagir com eles. |
 | `SUPPORT` | Consultar a fila da empresa, responder chamados e atualizar status/prioridade. |
-| `ADMIN` | Acessar as funcionalidades anteriores, o dashboard, gerenciar usuários e editar os dados da empresa. |
+| `ADMIN` | Acessar as funcionalidades anteriores, o dashboard, gerenciar usuários, dados da empresa, categorias e prioridades. |
 
 O cadastro público não envia um perfil selecionável e o backend continua responsável por criar `USER`. A interface esconde rotas e ações incompatíveis com o perfil, mas isso não é uma fronteira de segurança: cada operação continua sendo autorizada pelo backend. Em respostas HTTP 401, a sessão local é limpa e o usuário é enviado ao login; em 403, a sessão é preservada e a interface exibe acesso negado.
 
@@ -79,5 +79,7 @@ O cadastro público não envia um perfil selecionável e o backend continua resp
 O gerenciamento de usuários usa os endpoints existentes `GET /users/all`, `GET /users/:id` e `PUT /users/:id/role`, enviando `{ "role": "USER" | "SUPPORT" | "ADMIN" }`. A própria conta não tem ação de alteração de perfil na interface. O backend valida novamente o papel ADMIN, o vínculo empresarial, a regra contra autoalteração e a integridade do último administrador.
 
 A tela **Empresa** utiliza `GET /companies` e `PUT /companies` para editar os dados da empresa associada à sessão. O escopo e as permissões são determinados pelo backend; o frontend não envia um `company_id` escolhido pelo usuário.
+
+A tela **Categorias e prioridades** usa `GET`, `POST`, `PUT` e `DELETE` nos endpoints existentes `/category` e `/priorities`. As alterações não enviam identificador de empresa; o backend associa e valida os registros com a empresa autenticada. O menu e a rota são restritos visualmente a `ADMIN`.
 
 Os testes automatizados são executados com `npm test` (Vitest e Testing Library).

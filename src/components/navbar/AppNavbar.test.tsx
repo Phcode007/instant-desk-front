@@ -17,6 +17,7 @@ describe('AppNavbar', () => {
 
     expect(screen.queryByRole('link', { name: 'Usuários' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Empresa' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Categorias e prioridades' })).not.toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: 'Fila de Tickets' }).length).toBeGreaterThan(0);
 
     useAuthStore.setState({
@@ -25,6 +26,7 @@ describe('AppNavbar', () => {
     rerender(<MemoryRouter><AppNavbar /></MemoryRouter>);
     expect(screen.getAllByRole('link', { name: 'Usuários' }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole('link', { name: 'Empresa' }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: 'Categorias e prioridades' }).length).toBeGreaterThan(0);
   });
 
   it('clears the authentication state on logout', () => {
