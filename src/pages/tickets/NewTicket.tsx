@@ -1,7 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, PaperPlaneRight } from '@phosphor-icons/react';
-import { buscar, enviar, getApiErrorMessage } from '../../services/Service';
+import { ArrowClockwise, ArrowLeft, CheckCircle, PaperPlaneRight } from '@phosphor-icons/react';
+import { api, enviar, getApiErrorMessage } from '../../services/Service';
 import type Category from '../../models/Category';
 import type Priority from '../../models/Priority';
 import type Ticket from '../../models/Ticket';
@@ -15,13 +15,39 @@ interface Erros {
   descricao?: string;
 }
 
+type StatusLista = 'loading' | 'ready' | 'empty' | 'error';
+
+function getStatusHttp(error: unknown): number | undefined {
+  if (typeof error !== 'object' || error === null || !('response' in error)) return undefined;
+  const response = error.response;
+  if (typeof response !== 'object' || response === null || !('status' in response)) return undefined;
+  return typeof response.status === 'number' ? response.status : undefined;
+}
+
+function getMensagemErroLista(error: unknown, nomeLista: string): string {
+  const status = getStatusHttp(error);
+  let fallback: string;
+
+  if (status === 401) fallback = 'Sua sessão expirou. Entre novamente para carregar esta lista.';
+  else if (status === 403) fallback = 'Você não tem permissão para carregar esta lista.';
+  else if (status === 404) fallback = `O endpoint de ${nomeLista} não foi encontrado. Procure o administrador da organização.`;
+  else if (status === 500) fallback = `O servidor encontrou um erro ao carregar ${nomeLista}. Tente novamente.`;
+  else if (status !== undefined) fallback = `Não foi possível carregar ${nomeLista} (erro HTTP ${status}). Tente novamente.`;
+  else fallback = `Falha de conexão ao carregar ${nomeLista}. Verifique sua conexão e tente novamente.`;
+
+  return getApiErrorMessage(error, fallback);
+}
+
 function NewTicket() {
   const navigate = useNavigate();
 
   const [categorias, setCategorias] = useState<Category[]>([]);
   const [prioridades, setPrioridades] = useState<Priority[]>([]);
-  const [carregandoListas, setCarregandoListas] = useState<boolean>(true);
-  const [erro, setErro] = useState<string | null>(null);
+  const [statusCategorias, setStatusCategorias] = useState<StatusLista>('loading');
+  const [statusPrioridades, setStatusPrioridades] = useState<StatusLista>('loading');
+  const [erroCategorias, setErroCategorias] = useState<string | null>(null);
+  const [erroPrioridades, setErroPrioridades] = useState<string | null>(null);
+  const [erroEnvio, setErroEnvio] = useState<string | null>(null);
 
   const [titulo, setTitulo] = useState<string>('');
   const [categoriaId, setCategoriaId] = useState<string>('');
@@ -32,21 +58,61 @@ function NewTicket() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [sucesso, setSucesso] = useState<Ticket | null>(null);
 
+  function receberCategorias(data: Category[]) {
+    setCategorias(data);
+    setStatusCategorias(data.length > 0 ? 'ready' : 'empty');
+  }
+
+  function falhaAoCarregarCategorias(error: unknown) {
+    setErroCategorias(getMensagemErroLista(error, 'as categorias'));
+    setStatusCategorias('error');
+  }
+
+  function tentarCarregarCategorias() {
+    setStatusCategorias('loading');
+    setErroCategorias(null);
+    void api.get<Category[]>('/category')
+      .then(({ data }) => receberCategorias(data))
+      .catch(falhaAoCarregarCategorias);
+  }
+
+  function receberPrioridades(data: Priority[]) {
+    setPrioridades(data);
+    setStatusPrioridades(data.length > 0 ? 'ready' : 'empty');
+  }
+
+  function falhaAoCarregarPrioridades(error: unknown) {
+    setErroPrioridades(getMensagemErroLista(error, 'as prioridades'));
+    setStatusPrioridades('error');
+  }
+
+  function tentarCarregarPrioridades() {
+    setStatusPrioridades('loading');
+    setErroPrioridades(null);
+    void api.get<Priority[]>('/priorities')
+      .then(({ data }) => receberPrioridades(data))
+      .catch(falhaAoCarregarPrioridades);
+  }
+
   useEffect(() => {
-    async function carregarListas() {
-      setCarregandoListas(true);
-      try {
-        await Promise.all([
-          buscar<Category[]>('/category', setCategorias),
-          buscar<Priority[]>('/priorities', setPrioridades),
-        ]);
-      } catch (error) {
-        setErro(getApiErrorMessage(error, 'Não foi possível carregar categorias e prioridades.'));
-      } finally {
-        setCarregandoListas(false);
-      }
-    }
-    carregarListas();
+    let active = true;
+    void api.get<Category[]>('/category')
+      .then(({ data }) => {
+        if (active) receberCategorias(data);
+      })
+      .catch((error: unknown) => {
+        if (active) falhaAoCarregarCategorias(error);
+      });
+    void api.get<Priority[]>('/priorities')
+      .then(({ data }) => {
+        if (active) receberPrioridades(data);
+      })
+      .catch((error: unknown) => {
+        if (active) falhaAoCarregarPrioridades(error);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -60,8 +126,12 @@ function NewTicket() {
     const novosErros: Erros = {};
 
     if (!titulo.trim()) novosErros.titulo = 'O título do chamado é obrigatório.';
-    if (!categoriaId) novosErros.categoriaId = 'Selecione uma categoria para direcionar o atendimento.';
-    if (!prioridadeId) novosErros.prioridadeId = 'A seleção de prioridade é obrigatória.';
+    if (!categorias.some((categoria) => categoria.id === Number(categoriaId))) {
+      novosErros.categoriaId = 'Selecione uma categoria para direcionar o atendimento.';
+    }
+    if (!prioridades.some((prioridade) => prioridade.id === Number(prioridadeId))) {
+      novosErros.prioridadeId = 'A seleção de prioridade é obrigatória.';
+    }
     if (descricao.trim().length < 10) novosErros.descricao = 'A descrição deve conter no mínimo 10 caracteres.';
 
     setErros(novosErros);
@@ -70,8 +140,10 @@ function NewTicket() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (statusCategorias !== 'ready' || statusPrioridades !== 'ready') return;
     if (!validar()) return;
 
+    setErroEnvio(null);
     setIsSubmitting(true);
     try {
       await enviar<Ticket>(
@@ -85,7 +157,7 @@ function NewTicket() {
         setSucesso,
       );
     } catch (error) {
-      setErro(getApiErrorMessage(error, 'Não foi possível criar o chamado.'));
+      setErroEnvio(getApiErrorMessage(error, 'Não foi possível criar o chamado.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -126,7 +198,7 @@ function NewTicket() {
 
           <Card className="sm:p-6">
             <form onSubmit={handleSubmit} className="flex flex-col gap-lg">
-              {erro && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{erro}</p>}
+              {erroEnvio && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{erroEnvio}</p>}
               <Input
                 id="titulo"
                 label="Título do chamado"
@@ -148,9 +220,9 @@ function NewTicket() {
                   </label>
                   <span className="text-xs text-slate-500">Categorias da sua organização</span>
                 </div>
-                {carregandoListas ? (
+                {statusCategorias === 'loading' ? (
                   <LoadingState label="Carregando categorias..." />
-                ) : (
+                ) : statusCategorias === 'ready' ? (
                   <Select
                     id="categoria"
                     aria-label="Categoria"
@@ -165,6 +237,17 @@ function NewTicket() {
                       <option key={c.id} value={c.id}>{c.nome}</option>
                     ))}
                   </Select>
+                ) : statusCategorias === 'empty' ? (
+                  <p role="status" className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    Não há categorias cadastradas para sua organização. Procure o administrador para configurar o catálogo.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap items-center justify-between gap-sm rounded-lg bg-red-50 px-4 py-3">
+                    <p role="alert" className="text-sm text-red-700">{erroCategorias}</p>
+                    <Button type="button" variant="ghost" size="sm" disabled={isSubmitting} leadingIcon={<ArrowClockwise size={16} aria-hidden="true" />} onClick={tentarCarregarCategorias}>
+                      Tentar carregar categorias novamente
+                    </Button>
+                  </div>
                 )}
               </div>
 
@@ -175,9 +258,9 @@ function NewTicket() {
                   </label>
                   <span className="text-xs text-slate-500">Nível de criticidade</span>
                 </div>
-                {carregandoListas ? (
+                {statusPrioridades === 'loading' ? (
                   <LoadingState label="Carregando prioridades..." />
-                ) : (
+                ) : statusPrioridades === 'ready' ? (
                   <Select
                     id="prioridade"
                     aria-label="Prioridade"
@@ -192,6 +275,17 @@ function NewTicket() {
                       <option key={p.id} value={p.id}>{p.nome}</option>
                     ))}
                   </Select>
+                ) : statusPrioridades === 'empty' ? (
+                  <p role="status" className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    Não há prioridades cadastradas para sua organização. Procure o administrador para configurar o catálogo.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap items-center justify-between gap-sm rounded-lg bg-red-50 px-4 py-3">
+                    <p role="alert" className="text-sm text-red-700">{erroPrioridades}</p>
+                    <Button type="button" variant="ghost" size="sm" disabled={isSubmitting} leadingIcon={<ArrowClockwise size={16} aria-hidden="true" />} onClick={tentarCarregarPrioridades}>
+                      Tentar carregar prioridades novamente
+                    </Button>
+                  </div>
                 )}
               </div>
 
@@ -224,6 +318,7 @@ function NewTicket() {
                   <Button
                     type="submit"
                     loading={isSubmitting}
+                    disabled={statusCategorias !== 'ready' || statusPrioridades !== 'ready'}
                     leadingIcon={<PaperPlaneRight size={18} aria-hidden="true" />}
                     className="flex-1 sm:flex-none"
                   >
